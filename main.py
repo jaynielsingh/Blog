@@ -9,22 +9,23 @@ from flask_login import UserMixin, login_user, LoginManager, login_required, cur
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from flask_gravatar import Gravatar
 from functools import wraps
+import os
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 ckeditor = CKEditor(app)
 Bootstrap(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
 # CONNECT TO DB
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', "sqlite:///blog.db")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
-# Gravatars
+# Gravatar
 gravatar = Gravatar(app,
                     size=100,
                     rating='g',
@@ -78,8 +79,8 @@ class Comment(db.Model):
     text = db.Column(db.Text, nullable=False)
 
     # *******Add child relationship*******#
-    # "users.id" The users refers to the tablename of the Users class.
-    # "comments" refers to the comments property in the User class.
+    # "users.id" The users refers to the table name of the Users class.
+    # "comments" refers to the comment property in the User class.
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     comment_author = relationship("User", back_populates="comments")
 
@@ -87,7 +88,7 @@ class Comment(db.Model):
     parent_post = relationship("BlogPost", back_populates='comments')
 
 
-db.create_all()
+# db.create_all()
 
 # admin Decorator
 
